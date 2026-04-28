@@ -321,9 +321,9 @@ function KidsDashboard() {
         <div className="rounded-[2rem] border bg-panel p-5 shadow-soft backdrop-blur-md sm:p-8">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Morgenrutine</p>
+              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">{activeLabel.eyebrow}</p>
               <h1 className="mt-1 text-3xl font-black leading-tight text-foreground sm:text-5xl">
-                Klar til dagen!
+                {activeLabel.title}
               </h1>
             </div>
             <div className="floaty grid size-16 place-items-center rounded-full bg-accent text-accent-foreground shadow-soft sm:size-20">
@@ -396,7 +396,7 @@ function KidsDashboard() {
 
           <div className="mt-6 rounded-3xl bg-secondary p-4 text-secondary-foreground">
             <div className="flex items-end justify-between gap-3">
-              <span className="text-lg font-black">Krydser i alt</span>
+              <span className="text-lg font-black">Krydser i denne rutine</span>
               <span className="text-4xl font-black tabular-nums">
                 {completedCount}/{totalChecks}
               </span>
@@ -413,12 +413,26 @@ function KidsDashboard() {
         <aside className="rounded-[2rem] border bg-panel p-5 shadow-soft backdrop-blur-md sm:p-8">
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Morgen</p>
+              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Visuel tjekliste</p>
               <h2 className="mt-1 text-3xl font-black text-foreground">Børnenes rutine</h2>
             </div>
             <div className="grid size-14 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
               <Star className="size-8" aria-hidden="true" />
             </div>
+          </div>
+
+          <div className="mb-5 grid grid-cols-3 gap-2 rounded-3xl bg-muted p-2">
+            {(Object.keys(routineLabels) as RoutineKey[]).map((routineKey) => (
+              <button
+                key={routineKey}
+                type="button"
+                onClick={() => setActiveRoutine(routineKey)}
+                className="rounded-2xl px-3 py-3 text-sm font-black text-muted-foreground transition-colors hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[active=true]:bg-card data-[active=true]:text-primary data-[active=true]:shadow-soft"
+                data-active={activeRoutine === routineKey}
+              >
+                {routineLabels[routineKey].button}
+              </button>
+            ))}
           </div>
 
           <div className="mb-5 grid gap-3 lg:grid-cols-2">
@@ -473,6 +487,14 @@ function KidsDashboard() {
                   <Plus aria-hidden="true" />
                 </Button>
               </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Button variant="sunny" className="h-11" type="button" onClick={resetRoutineDefaults}>
+                  Standard
+                </Button>
+                <Button variant="kid" className="h-11" type="button" onClick={clearRoutineChecks}>
+                  Ryd kryds
+                </Button>
+              </div>
             </form>
           </div>
 
@@ -514,8 +536,14 @@ function KidsDashboard() {
                 className="grid min-w-[34rem] items-center gap-2 border-b px-4 py-3 last:border-b-0"
                 style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 3rem` }}
               >
-                <span className="text-base font-black text-card-foreground sm:text-lg">
-                  {index + 1}. {goal.title}
+                <span className="flex min-w-0 items-center gap-3 text-base font-black text-card-foreground sm:text-lg">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
+                    {(() => {
+                      const Icon = goalIcons[goal.icon] ?? Sparkles;
+                      return <Icon className="size-7" aria-hidden="true" />;
+                    })()}
+                  </span>
+                  <span className="min-w-0 leading-tight">{index + 1}. {goal.title}</span>
                 </span>
                 {children.map((child) => {
                   const isDone = checkedByGoal[goal.id]?.includes(child.id) ?? false;
@@ -543,6 +571,9 @@ function KidsDashboard() {
               </div>
             ))}
           </div>
+          <p className="mt-5 text-center text-sm font-extrabold text-muted-foreground">
+            Udviklet af Hassan Ali, Jama Consulting
+          </p>
         </aside>
       </section>
     </main>
