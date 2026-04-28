@@ -1,6 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Minus, Pause, Play, Plus, RotateCcw, Sparkles, Star } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Check,
+  Minus,
+  Pause,
+  Play,
+  Plus,
+  RotateCcw,
+  Sparkles,
+  Star,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -10,25 +21,69 @@ export const Route = createFileRoute("/")({
       { title: "Børne Dashboard Timer" },
       {
         name: "description",
-        content: "Et børnevenligt dashboard med cirkel-timer og sjove mål, der kan krydses af.",
+        content: "Et børnevenligt dashboard med cirkel-timer, egne gøremål og krydser for flere børn.",
       },
     ],
   }),
   component: KidsDashboard,
 });
 
-const starterGoals = [
-  "Børst tænder",
-  "Pak tasken",
-  "Ryd legetøj op",
-  "Læs 10 minutter",
+type Goal = { id: string; title: string };
+type Child = { id: string; name: string };
+type SavedDashboard = {
+  minutes: number;
+  goals: Goal[];
+  children: Child[];
+  checkedByGoal: Record<string, string[]>;
+};
+
+const storageKey = "kids-dashboard-v2";
+const starterGoals: Goal[] = [
+  { id: "brush", title: "Børst tænder" },
+  { id: "bag", title: "Pak tasken" },
+  { id: "toys", title: "Ryd legetøj op" },
+  { id: "read", title: "Læs 10 minutter" },
 ];
+const starterChildren: Child[] = [
+  { id: "child-1", name: "Barn 1" },
+  { id: "child-2", name: "Barn 2" },
+];
+
+function createId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
 
 function KidsDashboard() {
   const [minutes, setMinutes] = useState(15);
   const [secondsLeft, setSecondsLeft] = useState(minutes * 60);
   const [isRunning, setIsRunning] = useState(false);
-  const [checkedGoals, setCheckedGoals] = useState<string[]>([]);
+  const [goals, setGoals] = useState<Goal[]>(starterGoals);
+  const [children, setChildren] = useState<Child[]>(starterChildren);
+  const [checkedByGoal, setCheckedByGoal] = useState<Record<string, string[]>>({});
+  const [goalInput, setGoalInput] = useState("");
+  const [childInput, setChildInput] = useState("");
+  const [childCount, setChildCount] = useState(2);
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(storageKey);
+    if (saved) {
+      const parsed = JSON.parse(saved) as SavedDashboard;
+      setMinutes(parsed.minutes);
+      setSecondsLeft(parsed.minutes * 60);
+      setGoals(parsed.goals.length ? parsed.goals : starterGoals);
+      setChildren(parsed.children.length ? parsed.children : starterChildren);
+      setCheckedByGoal(parsed.checkedByGoal ?? {});
+      setChildCount(Math.max(1, parsed.children.length));
+    }
+    setHasLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoaded) return;
+    const saved: SavedDashboard = { minutes, goals, children, checkedByGoal };
+    window.localStorage.setItem(storageKey, JSON.stringify(saved));
+  }, [checkedByGoal, children, goals, hasLoaded, minutes]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -54,7 +109,9 @@ function KidsDashboard() {
     return `${mins}:${secs}`;
   }, [secondsLeft]);
 
-  const completedCount = checkedGoals.length;
+  const totalChecks = goals.length * children.length;
+  const completedCount = Object.values(checkedByGoal).reduce((sum, childIds) => sum + childIds.length, 0);
+  const completedPercent = totalChecks === 0 ? 0 : (completedCount / totalChecks) * 100;
 
   function changeMinutes(nextMinutes: number) {
     const safeMinutes = Math.max(1, Math.min(60, nextMinutes));
@@ -68,15 +125,68 @@ function KidsDashboard() {
     setIsRunning(false);
   }
 
-  function toggleGoal(goal: string) {
-    setCheckedGoals((current) =>
-      current.includes(goal) ? current.filter((item) => item !== goal) : [...current, goal],
+  function addGoal(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const title = goalInput.trim().slice(0, 40);
+    if (!title) return;
+    setGoals((current) => [...current, { id: createId("goal"), title }]);
+    setGoalInput("");
+  }
+
+  function removeGoal(goalId: string) {
+    setGoals((current) => current.filter((goal) => goal.id !== goalId));
+    setCheckedByGoal((current) => {
+      const next = { ...current };
+      delete next[goalId];
+      return next;
+    });
+  }
+
+  function addChild(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const name = childInput.trim().slice(0, 24);
+    if (!name) return;
+    setChildren((current) => [...current, { id: createId("child"), name }]);
+    setChildInput("");
+    setChildCount((current) => current + 1);
+  }
+
+  function createChildrenFromCount() {
+    const nextChildren = Array.from({ length: childCount }, (_, index) => ({
+      id: `child-${index + 1}`,
+      name: `Barn ${index + 1}`,
+    }));
+    setChildren(nextChildren);
+    setCheckedByGoal({});
+  }
+
+  function removeChild(childId: string) {
+    setChildren((current) => current.filter((child) => child.id !== childId));
+    setCheckedByGoal((current) =>
+      Object.fromEntries(
+        Object.entries(current).map(([goalId, childIds]) => [
+          goalId,
+          childIds.filter((id) => id !== childId),
+        ]),
+      ),
     );
+  }
+
+  function toggleCheck(goalId: string, childId: string) {
+    setCheckedByGoal((current) => {
+      const childIds = current[goalId] ?? [];
+      return {
+        ...current,
+        [goalId]: childIds.includes(childId)
+          ? childIds.filter((id) => id !== childId)
+          : [...childIds, childId],
+      };
+    });
   }
 
   return (
     <main className="dashboard-sky min-h-screen overflow-hidden px-4 py-5 text-foreground sm:px-6 lg:px-8">
-      <section className="mx-auto grid min-h-[calc(100vh-2.5rem)] max-w-6xl content-center gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
+      <section className="mx-auto grid min-h-[calc(100vh-2.5rem)] max-w-7xl content-center gap-6 xl:grid-cols-[0.95fr_1.05fr] lg:gap-8">
         <div className="rounded-[2rem] border bg-panel p-5 shadow-soft backdrop-blur-md sm:p-8">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
@@ -90,68 +200,81 @@ function KidsDashboard() {
             </div>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1fr_0.8fr]">
-            <div className="mx-auto grid w-full max-w-[28rem] place-items-center">
-              <div
-                className="timer-face grid aspect-square w-full place-items-center rounded-full p-4 shadow-soft"
-                style={{ "--timer-angle": timerAngle } as React.CSSProperties}
-                aria-label={`Timeren er ${Math.round(progress * 100)} procent færdig`}
-              >
-                <div className="grid size-full place-items-center rounded-full bg-card text-center shadow-soft">
-                  <div>
-                    <p className="text-base font-extrabold text-muted-foreground">Tid tilbage</p>
-                    <div className="mt-2 text-6xl font-black tabular-nums text-foreground sm:text-7xl">
-                      {displayTime}
-                    </div>
-                    <p className="mt-3 text-lg font-bold text-primary">
-                      {Math.round(progress * 100)}% klaret
-                    </p>
+          <div className="mx-auto grid w-full max-w-[25rem] place-items-center">
+            <div
+              className="timer-face grid aspect-square w-full place-items-center rounded-full p-4 shadow-soft"
+              style={{ "--timer-angle": timerAngle } as CSSProperties}
+              aria-label={`Timeren er ${Math.round(progress * 100)} procent færdig`}
+            >
+              <div className="grid size-full place-items-center rounded-full bg-card text-center shadow-soft">
+                <div>
+                  <p className="text-base font-extrabold text-muted-foreground">Tid tilbage</p>
+                  <div className="mt-2 text-6xl font-black tabular-nums text-foreground sm:text-7xl">
+                    {displayTime}
                   </div>
+                  <p className="mt-3 text-lg font-bold text-primary">
+                    {Math.round(progress * 100)}% klaret
+                  </p>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex flex-col justify-center gap-5">
-              <div className="rounded-3xl border bg-card p-4 shadow-soft">
-                <p className="text-sm font-extrabold uppercase tracking-wide text-muted-foreground">
-                  Sæt uret
-                </p>
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <Button
-                    variant="sunny"
-                    size="icon"
-                    className="size-14 rounded-full"
-                    onClick={() => changeMinutes(minutes - 5)}
-                    aria-label="Træk fem minutter fra"
-                  >
-                    <Minus className="size-6" aria-hidden="true" />
-                  </Button>
-                  <div className="text-center">
-                    <div className="text-5xl font-black tabular-nums text-foreground">{minutes}</div>
-                    <div className="text-sm font-extrabold text-muted-foreground">minutter</div>
-                  </div>
-                  <Button
-                    variant="sunny"
-                    size="icon"
-                    className="size-14 rounded-full"
-                    onClick={() => changeMinutes(minutes + 5)}
-                    aria-label="Læg fem minutter til"
-                  >
-                    <Plus className="size-6" aria-hidden="true" />
-                  </Button>
+          <div className="mt-6 grid gap-5 sm:grid-cols-[0.8fr_1fr]">
+            <div className="rounded-3xl border bg-card p-4 shadow-soft">
+              <p className="text-sm font-extrabold uppercase tracking-wide text-muted-foreground">
+                Sæt uret
+              </p>
+              <div className="mt-4 flex items-center justify-between gap-3">
+                <Button
+                  variant="sunny"
+                  size="icon"
+                  className="size-14 rounded-full"
+                  onClick={() => changeMinutes(minutes - 5)}
+                  aria-label="Træk fem minutter fra"
+                >
+                  <Minus className="size-6" aria-hidden="true" />
+                </Button>
+                <div className="text-center">
+                  <div className="text-5xl font-black tabular-nums text-foreground">{minutes}</div>
+                  <div className="text-sm font-extrabold text-muted-foreground">minutter</div>
                 </div>
+                <Button
+                  variant="sunny"
+                  size="icon"
+                  className="size-14 rounded-full"
+                  onClick={() => changeMinutes(minutes + 5)}
+                  aria-label="Læg fem minutter til"
+                >
+                  <Plus className="size-6" aria-hidden="true" />
+                </Button>
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Button variant="kid" size="kid" onClick={() => setIsRunning((value) => !value)}>
-                  {isRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
-                  {isRunning ? "Pause" : "Start"}
-                </Button>
-                <Button variant="sunny" size="kid" onClick={resetTimer}>
-                  <RotateCcw aria-hidden="true" />
-                  Igen
-                </Button>
-              </div>
+            <div className="grid grid-cols-2 gap-3 content-center">
+              <Button variant="kid" size="kid" onClick={() => setIsRunning((value) => !value)}>
+                {isRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+                {isRunning ? "Pause" : "Start"}
+              </Button>
+              <Button variant="sunny" size="kid" onClick={resetTimer}>
+                <RotateCcw aria-hidden="true" />
+                Igen
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-3xl bg-secondary p-4 text-secondary-foreground">
+            <div className="flex items-end justify-between gap-3">
+              <span className="text-lg font-black">Krydser i alt</span>
+              <span className="text-4xl font-black tabular-nums">
+                {completedCount}/{totalChecks}
+              </span>
+            </div>
+            <div className="mt-3 h-4 overflow-hidden rounded-full bg-background">
+              <div
+                className="h-full rounded-full bg-grass-pop transition-all duration-500"
+                style={{ width: `${completedPercent}%` }}
+              />
             </div>
           </div>
         </div>
@@ -160,46 +283,122 @@ function KidsDashboard() {
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Gøremål</p>
-              <h2 className="mt-1 text-3xl font-black text-foreground">Mine mål</h2>
+              <h2 className="mt-1 text-3xl font-black text-foreground">Børnenes mål</h2>
             </div>
             <div className="grid size-14 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
               <Star className="size-8" aria-hidden="true" />
             </div>
           </div>
 
-          <div className="mb-5 rounded-3xl bg-secondary p-4 text-secondary-foreground">
-            <div className="flex items-end justify-between gap-3">
-              <span className="text-lg font-black">Stjerner i dag</span>
-              <span className="text-4xl font-black tabular-nums">
-                {completedCount}/{starterGoals.length}
+          <div className="mb-5 grid gap-3 lg:grid-cols-2">
+            <div className="rounded-3xl border bg-card p-4 shadow-soft">
+              <div className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-muted-foreground">
+                <Users className="size-4" aria-hidden="true" />
+                Børn
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="12"
+                  value={childCount}
+                  onChange={(event) => setChildCount(Math.max(1, Number(event.target.value) || 1))}
+                  className="h-12 w-20 rounded-2xl border bg-background px-4 text-lg font-black text-foreground outline-none focus:ring-2 focus:ring-ring"
+                  aria-label="Antal børn"
+                />
+                <Button variant="kid" className="h-12 flex-1" onClick={createChildrenFromCount}>
+                  Opret
+                </Button>
+              </div>
+              <form className="mt-3 flex gap-2" onSubmit={addChild}>
+                <input
+                  value={childInput}
+                  onChange={(event) => setChildInput(event.target.value)}
+                  placeholder="Navn"
+                  maxLength={24}
+                  className="h-12 min-w-0 flex-1 rounded-2xl border bg-background px-4 font-bold text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                  aria-label="Barnets navn"
+                />
+                <Button variant="sunny" className="h-12" type="submit">
+                  <Plus aria-hidden="true" />
+                </Button>
+              </form>
+            </div>
+
+            <form className="rounded-3xl border bg-card p-4 shadow-soft" onSubmit={addGoal}>
+              <p className="mb-3 text-sm font-extrabold uppercase tracking-wide text-muted-foreground">
+                Nyt gøremål
+              </p>
+              <div className="flex gap-2">
+                <input
+                  value={goalInput}
+                  onChange={(event) => setGoalInput(event.target.value)}
+                  placeholder="Skriv mål"
+                  maxLength={40}
+                  className="h-12 min-w-0 flex-1 rounded-2xl border bg-background px-4 font-bold text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-ring"
+                  aria-label="Nyt gøremål"
+                />
+                <Button variant="kid" className="h-12" type="submit">
+                  <Plus aria-hidden="true" />
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          <div className="mb-4 flex flex-wrap gap-2">
+            {children.map((child) => (
+              <span
+                key={child.id}
+                className="inline-flex items-center gap-2 rounded-2xl bg-sky-soft px-3 py-2 text-sm font-black text-primary"
+              >
+                {child.name}
+                <button
+                  type="button"
+                  onClick={() => removeChild(child.id)}
+                  className="rounded-full p-1 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={`Fjern ${child.name}`}
+                >
+                  <Trash2 className="size-3.5" aria-hidden="true" />
+                </button>
               </span>
-            </div>
-            <div className="mt-3 h-4 overflow-hidden rounded-full bg-background">
-              <div
-                className="h-full rounded-full bg-grass-pop transition-all duration-500"
-                style={{ width: `${(completedCount / starterGoals.length) * 100}%` }}
-              />
-            </div>
+            ))}
           </div>
 
           <div className="space-y-3">
-            {starterGoals.map((goal) => {
-              const isDone = checkedGoals.includes(goal);
-              return (
-                <button
-                  key={goal}
-                  type="button"
-                  onClick={() => toggleGoal(goal)}
-                  className="flex w-full items-center gap-4 rounded-3xl border bg-card p-4 text-left shadow-soft transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-pressed={isDone}
-                >
-                  <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-sky-soft text-primary">
-                    {isDone && <Check className="size-7" aria-hidden="true" />}
-                  </span>
-                  <span className="text-xl font-black text-card-foreground">{goal}</span>
-                </button>
-              );
-            })}
+            {goals.map((goal) => (
+              <div key={goal.id} className="rounded-3xl border bg-card p-4 shadow-soft">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xl font-black text-card-foreground">{goal.title}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeGoal(goal.id)}
+                    className="grid size-10 shrink-0 place-items-center rounded-2xl text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`Fjern ${goal.title}`}
+                  >
+                    <Trash2 className="size-5" aria-hidden="true" />
+                  </button>
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {children.map((child) => {
+                    const isDone = checkedByGoal[goal.id]?.includes(child.id) ?? false;
+                    return (
+                      <button
+                        key={child.id}
+                        type="button"
+                        onClick={() => toggleCheck(goal.id, child.id)}
+                        className="flex items-center gap-3 rounded-2xl border bg-background p-3 text-left font-black transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-pressed={isDone}
+                      >
+                        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-soft text-primary">
+                          {isDone && <Check className="size-6" aria-hidden="true" />}
+                        </span>
+                        <span className="truncate text-foreground">{child.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </aside>
       </section>
