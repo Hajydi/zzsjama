@@ -276,7 +276,6 @@ function KidsDashboard() {
           ]),
         );
       });
-      delete next[goalId];
       return next;
     });
   }
@@ -296,23 +295,16 @@ function KidsDashboard() {
       name: `Barn ${index + 1}`,
     }));
     setChildren(nextChildren);
-    setCheckedByGoal({});
+    clearAllChecks();
   }
 
   function removeChild(childId: string) {
     setChildren((current) => current.filter((child) => child.id !== childId));
-    setCheckedByGoal((current) =>
-      Object.fromEntries(
-        Object.entries(current).map(([goalId, childIds]) => [
-          goalId,
-          childIds.filter((id) => id !== childId),
-        ]),
-      ),
-    );
+    removeChecksForChild(childId);
   }
 
   function toggleCheck(goalId: string, childId: string) {
-    setCheckedByGoal((current) => {
+    updateCheckedRoutine((current) => {
       const childIds = current[goalId] ?? [];
       return {
         ...current,
