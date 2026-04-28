@@ -1,16 +1,35 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
+  Apple,
+  Backpack,
+  Bath,
+  Bed,
+  BookOpen,
+  Car,
   Check,
+  ChefHat,
+  DoorOpen,
+  Droplets,
+  HandHelping,
+  HandPlatter,
+  HandSoap,
+  Home,
+  Moon,
   Minus,
+  Palette,
   Pause,
   Play,
   Plus,
+  Shirt,
   RotateCcw,
   Sparkles,
   Star,
+  Sun,
   Trash2,
   Users,
+  Utensils,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -28,31 +47,86 @@ export const Route = createFileRoute("/")({
   component: KidsDashboard,
 });
 
-type Goal = { id: string; title: string };
+type RoutineKey = "morning" | "afterSchool" | "evening";
+type Goal = { id: string; title: string; icon: keyof typeof goalIcons };
 type Child = { id: string; name: string };
 type SavedDashboard = {
   minutes: number;
-  goals: Goal[];
+  activeRoutine: RoutineKey;
+  routines: Record<RoutineKey, Goal[]>;
   children: Child[];
-  checkedByGoal: Record<string, string[]>;
+  checkedByRoutine: Record<RoutineKey, Record<string, string[]>>;
 };
 
-const storageKey = "kids-dashboard-morning-v1";
-const starterGoals: Goal[] = [
-  { id: "wake-up", title: "Stå op" },
-  { id: "toilet", title: "Gå på toilettet" },
-  { id: "clothes", title: "Tag tøj på" },
-  { id: "hair", title: "Red hår" },
-  { id: "brush-teeth", title: "Børst tænder" },
-  { id: "wash-face", title: "Vask ansigt" },
-  { id: "sunscreen", title: "Tag solcreme på" },
-  { id: "breakfast", title: "Spis morgenmad" },
-  { id: "plate", title: "Ryd din tallerken op" },
-  { id: "school-bag", title: "Pak skoletaske (tjek bøger + penalhus)" },
-  { id: "lunch", title: "Læg madpakke og drikkedunk i tasken" },
-  { id: "outerwear", title: "Tag overtøj og sko på" },
-  { id: "car", title: "Gå ud til bilen" },
-];
+const storageKey = "kids-dashboard-routines-v1";
+const goalIcons = {
+  apple: Apple,
+  backpack: Backpack,
+  bath: Bath,
+  bed: Bed,
+  book: BookOpen,
+  car: Car,
+  chef: ChefHat,
+  door: DoorOpen,
+  droplets: Droplets,
+  helping: HandHelping,
+  plate: HandPlatter,
+  soap: HandSoap,
+  home: Home,
+  moon: Moon,
+  palette: Palette,
+  shirt: Shirt,
+  sparkles: Sparkles,
+  sun: Sun,
+  utensils: Utensils,
+} satisfies Record<string, LucideIcon>;
+
+const routineLabels: Record<RoutineKey, { eyebrow: string; title: string; button: string }> = {
+  morning: { eyebrow: "Morgenrutine", title: "Klar til dagen!", button: "Morgen" },
+  afterSchool: { eyebrow: "Efter skole", title: "Hjemme igen!", button: "Efter skole" },
+  evening: { eyebrow: "Aftenrutine", title: "Klar til natten!", button: "Aften" },
+};
+
+const starterRoutines: Record<RoutineKey, Goal[]> = {
+  morning: [
+    { id: "morning-wake-up", title: "Stå op", icon: "sun" },
+    { id: "morning-toilet", title: "Gå på toilettet", icon: "door" },
+    { id: "morning-clothes", title: "Tag tøj på", icon: "shirt" },
+    { id: "morning-hair", title: "Red hår", icon: "sparkles" },
+    { id: "morning-brush-teeth", title: "Børst tænder", icon: "sparkles" },
+    { id: "morning-wash-face", title: "Vask ansigt", icon: "droplets" },
+    { id: "morning-sunscreen", title: "Tag solcreme på", icon: "sun" },
+    { id: "morning-breakfast", title: "Spis morgenmad", icon: "utensils" },
+    { id: "morning-plate", title: "Ryd din tallerken op", icon: "plate" },
+    { id: "morning-school-bag", title: "Pak skoletaske", icon: "backpack" },
+    { id: "morning-lunch", title: "Madpakke og drikkedunk i tasken", icon: "apple" },
+    { id: "morning-outerwear", title: "Tag overtøj og sko på", icon: "shirt" },
+    { id: "morning-car", title: "Gå ud til bilen", icon: "car" },
+  ],
+  afterSchool: [
+    { id: "after-jacket-bag", title: "Hæng jakke og taske på plads", icon: "home" },
+    { id: "after-wash-hands", title: "Vask hænder", icon: "soap" },
+    { id: "after-snack", title: "Spis en snack", icon: "apple" },
+    { id: "after-empty-bag", title: "Tøm skoletasken", icon: "backpack" },
+    { id: "after-homework", title: "Lav lektier", icon: "book" },
+    { id: "after-free-play", title: "Fri leg / afslapning", icon: "palette" },
+    { id: "after-help", title: "Hjælp med en lille ting", icon: "helping" },
+    { id: "after-dinner", title: "Spis aftensmad", icon: "utensils" },
+    { id: "after-plate", title: "Ryd din tallerken op", icon: "plate" },
+    { id: "after-calm", title: "Rolig aktivitet", icon: "book" },
+  ],
+  evening: [
+    { id: "evening-toilet", title: "Gå på toilettet", icon: "door" },
+    { id: "evening-bath", title: "Bad / vask dig", icon: "bath" },
+    { id: "evening-pajamas", title: "Tag nattøj på", icon: "moon" },
+    { id: "evening-brush-teeth", title: "Børst tænder", icon: "sparkles" },
+    { id: "evening-pack-bag", title: "Pak skoletaske", icon: "backpack" },
+    { id: "evening-clothes-ready", title: "Læg tøj frem til i morgen", icon: "shirt" },
+    { id: "evening-room", title: "Kort oprydning på værelset", icon: "home" },
+    { id: "evening-calm", title: "Rolig aktivitet", icon: "book" },
+    { id: "evening-bed", title: "I seng", icon: "bed" },
+  ],
+};
 const starterChildren: Child[] = [
   { id: "child-1", name: "Barn 1" },
   { id: "child-2", name: "Barn 2" },
