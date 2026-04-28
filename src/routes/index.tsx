@@ -37,12 +37,21 @@ type SavedDashboard = {
   checkedByGoal: Record<string, string[]>;
 };
 
-const storageKey = "kids-dashboard-v2";
+const storageKey = "kids-dashboard-morning-v1";
 const starterGoals: Goal[] = [
-  { id: "brush", title: "Børst tænder" },
-  { id: "bag", title: "Pak tasken" },
-  { id: "toys", title: "Ryd legetøj op" },
-  { id: "read", title: "Læs 10 minutter" },
+  { id: "wake-up", title: "Stå op" },
+  { id: "toilet", title: "Gå på toilettet" },
+  { id: "clothes", title: "Tag tøj på" },
+  { id: "hair", title: "Red hår" },
+  { id: "brush-teeth", title: "Børst tænder" },
+  { id: "wash-face", title: "Vask ansigt" },
+  { id: "sunscreen", title: "Tag solcreme på" },
+  { id: "breakfast", title: "Spis morgenmad" },
+  { id: "plate", title: "Ryd din tallerken op" },
+  { id: "school-bag", title: "Pak skoletaske (tjek bøger + penalhus)" },
+  { id: "lunch", title: "Læg madpakke og drikkedunk i tasken" },
+  { id: "outerwear", title: "Tag overtøj og sko på" },
+  { id: "car", title: "Gå ud til bilen" },
 ];
 const starterChildren: Child[] = [
   { id: "child-1", name: "Barn 1" },
@@ -190,9 +199,9 @@ function KidsDashboard() {
         <div className="rounded-[2rem] border bg-panel p-5 shadow-soft backdrop-blur-md sm:p-8">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Min dag</p>
+              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Morgenrutine</p>
               <h1 className="mt-1 text-3xl font-black leading-tight text-foreground sm:text-5xl">
-                Klar, parat, fokus!
+                Klar til dagen!
               </h1>
             </div>
             <div className="floaty grid size-16 place-items-center rounded-full bg-accent text-accent-foreground shadow-soft sm:size-20">
@@ -282,8 +291,8 @@ function KidsDashboard() {
         <aside className="rounded-[2rem] border bg-panel p-5 shadow-soft backdrop-blur-md sm:p-8">
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Gøremål</p>
-              <h2 className="mt-1 text-3xl font-black text-foreground">Børnenes mål</h2>
+              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Morgen</p>
+              <h2 className="mt-1 text-3xl font-black text-foreground">Børnenes rutine</h2>
             </div>
             <div className="grid size-14 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
               <Star className="size-8" aria-hidden="true" />
@@ -364,39 +373,51 @@ function KidsDashboard() {
             ))}
           </div>
 
-          <div className="space-y-3">
-            {goals.map((goal) => (
-              <div key={goal.id} className="rounded-3xl border bg-card p-4 shadow-soft">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xl font-black text-card-foreground">{goal.title}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeGoal(goal.id)}
-                    className="grid size-10 shrink-0 place-items-center rounded-2xl text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label={`Fjern ${goal.title}`}
-                  >
-                    <Trash2 className="size-5" aria-hidden="true" />
-                  </button>
-                </div>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {children.map((child) => {
-                    const isDone = checkedByGoal[goal.id]?.includes(child.id) ?? false;
-                    return (
-                      <button
-                        key={child.id}
-                        type="button"
-                        onClick={() => toggleCheck(goal.id, child.id)}
-                        className="flex items-center gap-3 rounded-2xl border bg-background p-3 text-left font-black transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        aria-pressed={isDone}
-                      >
-                        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-soft text-primary">
-                          {isDone && <Check className="size-6" aria-hidden="true" />}
-                        </span>
-                        <span className="truncate text-foreground">{child.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+          <div className="overflow-x-auto rounded-3xl border bg-card shadow-soft">
+            <div
+              className="grid min-w-[34rem] items-center border-b bg-muted/50 px-4 py-3"
+              style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 3rem` }}
+            >
+              <span className="text-sm font-extrabold uppercase tracking-wide text-muted-foreground">Gøremål</span>
+              {children.map((child) => (
+                <span key={child.id} className="text-center text-sm font-black text-foreground">
+                  {child.name}
+                </span>
+              ))}
+              <span aria-hidden="true" />
+            </div>
+            {goals.map((goal, index) => (
+              <div
+                key={goal.id}
+                className="grid min-w-[34rem] items-center gap-2 border-b px-4 py-3 last:border-b-0"
+                style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 3rem` }}
+              >
+                <span className="text-base font-black text-card-foreground sm:text-lg">
+                  {index + 1}. {goal.title}
+                </span>
+                {children.map((child) => {
+                  const isDone = checkedByGoal[goal.id]?.includes(child.id) ?? false;
+                  return (
+                    <button
+                      key={child.id}
+                      type="button"
+                      onClick={() => toggleCheck(goal.id, child.id)}
+                      className="mx-auto grid size-12 place-items-center rounded-2xl border bg-background text-primary transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label={`${child.name}: ${goal.title}`}
+                      aria-pressed={isDone}
+                    >
+                      {isDone && <Check className="size-7" aria-hidden="true" />}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => removeGoal(goal.id)}
+                  className="grid size-10 place-items-center rounded-2xl text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={`Fjern ${goal.title}`}
+                >
+                  <Trash2 className="size-5" aria-hidden="true" />
+                </button>
               </div>
             ))}
           </div>
