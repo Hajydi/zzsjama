@@ -1,16 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
+  Apple,
+  Backpack,
+  Bath,
+  Bed,
+  BookOpen,
+  Car,
   Check,
+  ChefHat,
+  DoorOpen,
+  Droplets,
+  HandHelping,
+  HandPlatter,
+  Home,
+  Moon,
   Minus,
+  Palette,
   Pause,
   Play,
   Plus,
+  Shirt,
   RotateCcw,
   Sparkles,
   Star,
+  Sun,
   Trash2,
   Users,
+  Utensils,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -28,31 +46,86 @@ export const Route = createFileRoute("/")({
   component: KidsDashboard,
 });
 
-type Goal = { id: string; title: string };
+type RoutineKey = "morning" | "afterSchool" | "evening";
+type Goal = { id: string; title: string; icon: keyof typeof goalIcons };
 type Child = { id: string; name: string };
 type SavedDashboard = {
   minutes: number;
-  goals: Goal[];
+  activeRoutine: RoutineKey;
+  routines: Record<RoutineKey, Goal[]>;
   children: Child[];
-  checkedByGoal: Record<string, string[]>;
+  checkedByRoutine: Record<RoutineKey, Record<string, string[]>>;
 };
 
-const storageKey = "kids-dashboard-morning-v1";
-const starterGoals: Goal[] = [
-  { id: "wake-up", title: "Stå op" },
-  { id: "toilet", title: "Gå på toilettet" },
-  { id: "clothes", title: "Tag tøj på" },
-  { id: "hair", title: "Red hår" },
-  { id: "brush-teeth", title: "Børst tænder" },
-  { id: "wash-face", title: "Vask ansigt" },
-  { id: "sunscreen", title: "Tag solcreme på" },
-  { id: "breakfast", title: "Spis morgenmad" },
-  { id: "plate", title: "Ryd din tallerken op" },
-  { id: "school-bag", title: "Pak skoletaske (tjek bøger + penalhus)" },
-  { id: "lunch", title: "Læg madpakke og drikkedunk i tasken" },
-  { id: "outerwear", title: "Tag overtøj og sko på" },
-  { id: "car", title: "Gå ud til bilen" },
-];
+const storageKey = "kids-dashboard-routines-v1";
+const goalIcons = {
+  apple: Apple,
+  backpack: Backpack,
+  bath: Bath,
+  bed: Bed,
+  book: BookOpen,
+  car: Car,
+  chef: ChefHat,
+  door: DoorOpen,
+  droplets: Droplets,
+  helping: HandHelping,
+  plate: HandPlatter,
+  soap: Droplets,
+  home: Home,
+  moon: Moon,
+  palette: Palette,
+  shirt: Shirt,
+  sparkles: Sparkles,
+  sun: Sun,
+  utensils: Utensils,
+} satisfies Record<string, LucideIcon>;
+
+const routineLabels: Record<RoutineKey, { eyebrow: string; title: string; button: string }> = {
+  morning: { eyebrow: "Morgenrutine", title: "Klar til dagen!", button: "Morgen" },
+  afterSchool: { eyebrow: "Efter skole", title: "Hjemme igen!", button: "Efter skole" },
+  evening: { eyebrow: "Aftenrutine", title: "Klar til natten!", button: "Aften" },
+};
+
+const starterRoutines: Record<RoutineKey, Goal[]> = {
+  morning: [
+    { id: "morning-wake-up", title: "Stå op", icon: "sun" },
+    { id: "morning-toilet", title: "Gå på toilettet", icon: "door" },
+    { id: "morning-clothes", title: "Tag tøj på", icon: "shirt" },
+    { id: "morning-hair", title: "Red hår", icon: "sparkles" },
+    { id: "morning-brush-teeth", title: "Børst tænder", icon: "sparkles" },
+    { id: "morning-wash-face", title: "Vask ansigt", icon: "droplets" },
+    { id: "morning-sunscreen", title: "Tag solcreme på", icon: "sun" },
+    { id: "morning-breakfast", title: "Spis morgenmad", icon: "utensils" },
+    { id: "morning-plate", title: "Ryd din tallerken op", icon: "plate" },
+    { id: "morning-school-bag", title: "Pak skoletaske", icon: "backpack" },
+    { id: "morning-lunch", title: "Madpakke og drikkedunk i tasken", icon: "apple" },
+    { id: "morning-outerwear", title: "Tag overtøj og sko på", icon: "shirt" },
+    { id: "morning-car", title: "Gå ud til bilen", icon: "car" },
+  ],
+  afterSchool: [
+    { id: "after-jacket-bag", title: "Hæng jakke og taske på plads", icon: "home" },
+    { id: "after-wash-hands", title: "Vask hænder", icon: "soap" },
+    { id: "after-snack", title: "Spis en snack", icon: "apple" },
+    { id: "after-empty-bag", title: "Tøm skoletasken", icon: "backpack" },
+    { id: "after-homework", title: "Lav lektier", icon: "book" },
+    { id: "after-free-play", title: "Fri leg / afslapning", icon: "palette" },
+    { id: "after-help", title: "Hjælp med en lille ting", icon: "helping" },
+    { id: "after-dinner", title: "Spis aftensmad", icon: "utensils" },
+    { id: "after-plate", title: "Ryd din tallerken op", icon: "plate" },
+    { id: "after-calm", title: "Rolig aktivitet", icon: "book" },
+  ],
+  evening: [
+    { id: "evening-toilet", title: "Gå på toilettet", icon: "door" },
+    { id: "evening-bath", title: "Bad / vask dig", icon: "bath" },
+    { id: "evening-pajamas", title: "Tag nattøj på", icon: "moon" },
+    { id: "evening-brush-teeth", title: "Børst tænder", icon: "sparkles" },
+    { id: "evening-pack-bag", title: "Pak skoletaske", icon: "backpack" },
+    { id: "evening-clothes-ready", title: "Læg tøj frem til i morgen", icon: "shirt" },
+    { id: "evening-room", title: "Kort oprydning på værelset", icon: "home" },
+    { id: "evening-calm", title: "Rolig aktivitet", icon: "book" },
+    { id: "evening-bed", title: "I seng", icon: "bed" },
+  ],
+};
 const starterChildren: Child[] = [
   { id: "child-1", name: "Barn 1" },
   { id: "child-2", name: "Barn 2" },
@@ -66,13 +139,19 @@ function KidsDashboard() {
   const [minutes, setMinutes] = useState(15);
   const [secondsLeft, setSecondsLeft] = useState(minutes * 60);
   const [isRunning, setIsRunning] = useState(false);
-  const [goals, setGoals] = useState<Goal[]>(starterGoals);
+  const [activeRoutine, setActiveRoutine] = useState<RoutineKey>("morning");
+  const [routines, setRoutines] = useState<Record<RoutineKey, Goal[]>>(starterRoutines);
   const [children, setChildren] = useState<Child[]>(starterChildren);
-  const [checkedByGoal, setCheckedByGoal] = useState<Record<string, string[]>>({});
+  const [checkedByRoutine, setCheckedByRoutine] = useState<Record<RoutineKey, Record<string, string[]>>>(
+    { morning: {}, afterSchool: {}, evening: {} },
+  );
   const [goalInput, setGoalInput] = useState("");
   const [childInput, setChildInput] = useState("");
   const [childCount, setChildCount] = useState(2);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const goals = routines[activeRoutine];
+  const checkedByGoal = checkedByRoutine[activeRoutine];
+  const activeLabel = routineLabels[activeRoutine];
 
   useEffect(() => {
     const saved = window.localStorage.getItem(storageKey);
@@ -80,9 +159,10 @@ function KidsDashboard() {
       const parsed = JSON.parse(saved) as SavedDashboard;
       setMinutes(parsed.minutes);
       setSecondsLeft(parsed.minutes * 60);
-      setGoals(parsed.goals.length ? parsed.goals : starterGoals);
+      setActiveRoutine(parsed.activeRoutine ?? "morning");
+      setRoutines(parsed.routines ?? starterRoutines);
       setChildren(parsed.children.length ? parsed.children : starterChildren);
-      setCheckedByGoal(parsed.checkedByGoal ?? {});
+      setCheckedByRoutine(parsed.checkedByRoutine ?? { morning: {}, afterSchool: {}, evening: {} });
       setChildCount(Math.max(1, parsed.children.length));
     }
     setHasLoaded(true);
@@ -90,9 +170,9 @@ function KidsDashboard() {
 
   useEffect(() => {
     if (!hasLoaded) return;
-    const saved: SavedDashboard = { minutes, goals, children, checkedByGoal };
+    const saved: SavedDashboard = { minutes, activeRoutine, routines, children, checkedByRoutine };
     window.localStorage.setItem(storageKey, JSON.stringify(saved));
-  }, [checkedByGoal, children, goals, hasLoaded, minutes]);
+  }, [activeRoutine, checkedByRoutine, children, hasLoaded, minutes, routines]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -138,15 +218,64 @@ function KidsDashboard() {
     event.preventDefault();
     const title = goalInput.trim().slice(0, 40);
     if (!title) return;
-    setGoals((current) => [...current, { id: createId("goal"), title }]);
+    setRoutines((current) => ({
+      ...current,
+      [activeRoutine]: [...current[activeRoutine], { id: createId(activeRoutine), title, icon: "sparkles" }],
+    }));
     setGoalInput("");
   }
 
   function removeGoal(goalId: string) {
-    setGoals((current) => current.filter((goal) => goal.id !== goalId));
-    setCheckedByGoal((current) => {
+    setRoutines((current) => ({
+      ...current,
+      [activeRoutine]: current[activeRoutine].filter((goal) => goal.id !== goalId),
+    }));
+    setCheckedByRoutine((current) => {
+      const nextRoutine = { ...current[activeRoutine] };
+      delete nextRoutine[goalId];
+      return { ...current, [activeRoutine]: nextRoutine };
+    });
+  }
+
+  function clearRoutineChecks() {
+    setCheckedByRoutine((current) => ({ ...current, [activeRoutine]: {} }));
+  }
+
+  function clearAllChecks() {
+    setCheckedByRoutine({ morning: {}, afterSchool: {}, evening: {} });
+  }
+
+  function resetRoutineDefaults() {
+    setRoutines((current) => ({ ...current, [activeRoutine]: starterRoutines[activeRoutine] }));
+    setCheckedByRoutine((current) => {
+      const next = { ...current[activeRoutine] };
+      Object.keys(next).forEach((goalId) => {
+        if (!starterRoutines[activeRoutine].some((goal) => goal.id === goalId)) {
+          delete next[goalId];
+        }
+      });
+      return { ...current, [activeRoutine]: next };
+    });
+  }
+
+  function updateCheckedRoutine(updater: (current: Record<string, string[]>) => Record<string, string[]>) {
+    setCheckedByRoutine((current) => ({
+      ...current,
+      [activeRoutine]: updater(current[activeRoutine]),
+    }));
+  }
+
+  function removeChecksForChild(childId: string) {
+    setCheckedByRoutine((current) => {
       const next = { ...current };
-      delete next[goalId];
+      (Object.keys(next) as RoutineKey[]).forEach((routineKey) => {
+        next[routineKey] = Object.fromEntries(
+          Object.entries(next[routineKey]).map(([goalId, childIds]) => [
+            goalId,
+            childIds.filter((id) => id !== childId),
+          ]),
+        );
+      });
       return next;
     });
   }
@@ -166,23 +295,16 @@ function KidsDashboard() {
       name: `Barn ${index + 1}`,
     }));
     setChildren(nextChildren);
-    setCheckedByGoal({});
+    clearAllChecks();
   }
 
   function removeChild(childId: string) {
     setChildren((current) => current.filter((child) => child.id !== childId));
-    setCheckedByGoal((current) =>
-      Object.fromEntries(
-        Object.entries(current).map(([goalId, childIds]) => [
-          goalId,
-          childIds.filter((id) => id !== childId),
-        ]),
-      ),
-    );
+    removeChecksForChild(childId);
   }
 
   function toggleCheck(goalId: string, childId: string) {
-    setCheckedByGoal((current) => {
+    updateCheckedRoutine((current) => {
       const childIds = current[goalId] ?? [];
       return {
         ...current,
@@ -199,9 +321,9 @@ function KidsDashboard() {
         <div className="rounded-[2rem] border bg-panel p-5 shadow-soft backdrop-blur-md sm:p-8">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Morgenrutine</p>
+              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">{activeLabel.eyebrow}</p>
               <h1 className="mt-1 text-3xl font-black leading-tight text-foreground sm:text-5xl">
-                Klar til dagen!
+                {activeLabel.title}
               </h1>
             </div>
             <div className="floaty grid size-16 place-items-center rounded-full bg-accent text-accent-foreground shadow-soft sm:size-20">
@@ -274,7 +396,7 @@ function KidsDashboard() {
 
           <div className="mt-6 rounded-3xl bg-secondary p-4 text-secondary-foreground">
             <div className="flex items-end justify-between gap-3">
-              <span className="text-lg font-black">Krydser i alt</span>
+              <span className="text-lg font-black">Krydser i denne rutine</span>
               <span className="text-4xl font-black tabular-nums">
                 {completedCount}/{totalChecks}
               </span>
@@ -291,12 +413,26 @@ function KidsDashboard() {
         <aside className="rounded-[2rem] border bg-panel p-5 shadow-soft backdrop-blur-md sm:p-8">
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Morgen</p>
+              <p className="text-sm font-extrabold uppercase tracking-wide text-primary">Visuel tjekliste</p>
               <h2 className="mt-1 text-3xl font-black text-foreground">Børnenes rutine</h2>
             </div>
             <div className="grid size-14 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
               <Star className="size-8" aria-hidden="true" />
             </div>
+          </div>
+
+          <div className="mb-5 grid grid-cols-3 gap-2 rounded-3xl bg-muted p-2">
+            {(Object.keys(routineLabels) as RoutineKey[]).map((routineKey) => (
+              <button
+                key={routineKey}
+                type="button"
+                onClick={() => setActiveRoutine(routineKey)}
+                className="rounded-2xl px-3 py-3 text-sm font-black text-muted-foreground transition-colors hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[active=true]:bg-card data-[active=true]:text-primary data-[active=true]:shadow-soft"
+                data-active={activeRoutine === routineKey}
+              >
+                {routineLabels[routineKey].button}
+              </button>
+            ))}
           </div>
 
           <div className="mb-5 grid gap-3 lg:grid-cols-2">
@@ -351,6 +487,14 @@ function KidsDashboard() {
                   <Plus aria-hidden="true" />
                 </Button>
               </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Button variant="sunny" className="h-11" type="button" onClick={resetRoutineDefaults}>
+                  Standard
+                </Button>
+                <Button variant="kid" className="h-11" type="button" onClick={clearRoutineChecks}>
+                  Ryd kryds
+                </Button>
+              </div>
             </form>
           </div>
 
@@ -392,8 +536,14 @@ function KidsDashboard() {
                 className="grid min-w-[34rem] items-center gap-2 border-b px-4 py-3 last:border-b-0"
                 style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 3rem` }}
               >
-                <span className="text-base font-black text-card-foreground sm:text-lg">
-                  {index + 1}. {goal.title}
+                <span className="flex min-w-0 items-center gap-3 text-base font-black text-card-foreground sm:text-lg">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
+                    {(() => {
+                      const Icon = goalIcons[goal.icon] ?? Sparkles;
+                      return <Icon className="size-7" aria-hidden="true" />;
+                    })()}
+                  </span>
+                  <span className="min-w-0 leading-tight">{index + 1}. {goal.title}</span>
                 </span>
                 {children.map((child) => {
                   const isDone = checkedByGoal[goal.id]?.includes(child.id) ?? false;
@@ -421,6 +571,9 @@ function KidsDashboard() {
               </div>
             ))}
           </div>
+          <p className="mt-5 text-center text-sm font-extrabold text-muted-foreground">
+            Udviklet af Hassan Ali, Jama Consulting
+          </p>
         </aside>
       </section>
     </main>
