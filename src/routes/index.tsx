@@ -218,14 +218,64 @@ function KidsDashboard() {
     event.preventDefault();
     const title = goalInput.trim().slice(0, 40);
     if (!title) return;
-    setGoals((current) => [...current, { id: createId("goal"), title }]);
+    setRoutines((current) => ({
+      ...current,
+      [activeRoutine]: [...current[activeRoutine], { id: createId(activeRoutine), title, icon: "sparkles" }],
+    }));
     setGoalInput("");
   }
 
   function removeGoal(goalId: string) {
-    setGoals((current) => current.filter((goal) => goal.id !== goalId));
-    setCheckedByGoal((current) => {
+    setRoutines((current) => ({
+      ...current,
+      [activeRoutine]: current[activeRoutine].filter((goal) => goal.id !== goalId),
+    }));
+    setCheckedByRoutine((current) => {
+      const nextRoutine = { ...current[activeRoutine] };
+      delete nextRoutine[goalId];
+      return { ...current, [activeRoutine]: nextRoutine };
+    });
+  }
+
+  function clearRoutineChecks() {
+    setCheckedByRoutine((current) => ({ ...current, [activeRoutine]: {} }));
+  }
+
+  function clearAllChecks() {
+    setCheckedByRoutine({ morning: {}, afterSchool: {}, evening: {} });
+  }
+
+  function resetRoutineDefaults() {
+    setRoutines((current) => ({ ...current, [activeRoutine]: starterRoutines[activeRoutine] }));
+    setCheckedByRoutine((current) => {
+      const next = { ...current[activeRoutine] };
+      Object.keys(next).forEach((goalId) => {
+        if (!starterRoutines[activeRoutine].some((goal) => goal.id === goalId)) {
+          delete next[goalId];
+        }
+      });
+      return { ...current, [activeRoutine]: next };
+    });
+  }
+
+  function updateCheckedRoutine(updater: (current: Record<string, string[]>) => Record<string, string[]>) {
+    setCheckedByRoutine((current) => ({
+      ...current,
+      [activeRoutine]: updater(current[activeRoutine]),
+    }));
+  }
+
+  function removeChecksForChild(childId: string) {
+    setCheckedByRoutine((current) => {
       const next = { ...current };
+      (Object.keys(next) as RoutineKey[]).forEach((routineKey) => {
+        next[routineKey] = Object.fromEntries(
+          Object.entries(next[routineKey]).map(([goalId, childIds]) => [
+            goalId,
+            childIds.filter((id) => id !== childId),
+          ]),
+        );
+      });
       delete next[goalId];
       return next;
     });
