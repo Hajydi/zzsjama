@@ -12,7 +12,6 @@ import {
   Droplets,
   HandHelping,
   HandPlatter,
-  HandSoap,
   Home,
   Moon,
   Minus,
@@ -71,7 +70,7 @@ const goalIcons = {
   droplets: Droplets,
   helping: HandHelping,
   plate: HandPlatter,
-  soap: HandSoap,
+  soap: Droplets,
   home: Home,
   moon: Moon,
   palette: Palette,
@@ -140,13 +139,19 @@ function KidsDashboard() {
   const [minutes, setMinutes] = useState(15);
   const [secondsLeft, setSecondsLeft] = useState(minutes * 60);
   const [isRunning, setIsRunning] = useState(false);
-  const [goals, setGoals] = useState<Goal[]>(starterGoals);
+  const [activeRoutine, setActiveRoutine] = useState<RoutineKey>("morning");
+  const [routines, setRoutines] = useState<Record<RoutineKey, Goal[]>>(starterRoutines);
   const [children, setChildren] = useState<Child[]>(starterChildren);
-  const [checkedByGoal, setCheckedByGoal] = useState<Record<string, string[]>>({});
+  const [checkedByRoutine, setCheckedByRoutine] = useState<Record<RoutineKey, Record<string, string[]>>>(
+    { morning: {}, afterSchool: {}, evening: {} },
+  );
   const [goalInput, setGoalInput] = useState("");
   const [childInput, setChildInput] = useState("");
   const [childCount, setChildCount] = useState(2);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const goals = routines[activeRoutine];
+  const checkedByGoal = checkedByRoutine[activeRoutine];
+  const activeLabel = routineLabels[activeRoutine];
 
   useEffect(() => {
     const saved = window.localStorage.getItem(storageKey);
@@ -154,9 +159,10 @@ function KidsDashboard() {
       const parsed = JSON.parse(saved) as SavedDashboard;
       setMinutes(parsed.minutes);
       setSecondsLeft(parsed.minutes * 60);
-      setGoals(parsed.goals.length ? parsed.goals : starterGoals);
+      setActiveRoutine(parsed.activeRoutine ?? "morning");
+      setRoutines(parsed.routines ?? starterRoutines);
       setChildren(parsed.children.length ? parsed.children : starterChildren);
-      setCheckedByGoal(parsed.checkedByGoal ?? {});
+      setCheckedByRoutine(parsed.checkedByRoutine ?? { morning: {}, afterSchool: {}, evening: {} });
       setChildCount(Math.max(1, parsed.children.length));
     }
     setHasLoaded(true);
@@ -164,9 +170,9 @@ function KidsDashboard() {
 
   useEffect(() => {
     if (!hasLoaded) return;
-    const saved: SavedDashboard = { minutes, goals, children, checkedByGoal };
+    const saved: SavedDashboard = { minutes, activeRoutine, routines, children, checkedByRoutine };
     window.localStorage.setItem(storageKey, JSON.stringify(saved));
-  }, [checkedByGoal, children, goals, hasLoaded, minutes]);
+  }, [activeRoutine, checkedByRoutine, children, hasLoaded, minutes, routines]);
 
   useEffect(() => {
     if (!isRunning) return;
