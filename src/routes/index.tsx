@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Apple,
+  ArrowDown,
+  ArrowUp,
   Backpack,
   Bath,
   Bed,
@@ -234,6 +236,20 @@ function KidsDashboard() {
       const nextRoutine = { ...current[activeRoutine] };
       delete nextRoutine[goalId];
       return { ...current, [activeRoutine]: nextRoutine };
+    });
+  }
+
+  function moveGoal(goalId: string, direction: -1 | 1) {
+    setRoutines((current) => {
+      const routineGoals = current[activeRoutine];
+      const currentIndex = routineGoals.findIndex((goal) => goal.id === goalId);
+      const nextIndex = currentIndex + direction;
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= routineGoals.length) return current;
+
+      const nextGoals = [...routineGoals];
+      const [goalToMove] = nextGoals.splice(currentIndex, 1);
+      nextGoals.splice(nextIndex, 0, goalToMove);
+      return { ...current, [activeRoutine]: nextGoals };
     });
   }
 
@@ -520,7 +536,7 @@ function KidsDashboard() {
           <div className="overflow-x-auto rounded-3xl border bg-card shadow-soft">
             <div
               className="grid min-w-[34rem] items-center border-b bg-muted/50 px-4 py-3"
-              style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 3rem` }}
+              style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 7rem` }}
             >
               <span className="text-sm font-extrabold uppercase tracking-wide text-muted-foreground">Gøremål</span>
               {children.map((child) => (
@@ -534,7 +550,7 @@ function KidsDashboard() {
               <div
                 key={goal.id}
                 className="grid min-w-[34rem] items-center gap-2 border-b px-4 py-3 last:border-b-0"
-                style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 3rem` }}
+                style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 7rem` }}
               >
                 <span className="flex min-w-0 items-center gap-3 text-base font-black text-card-foreground sm:text-lg">
                   <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
@@ -560,14 +576,34 @@ function KidsDashboard() {
                     </button>
                   );
                 })}
-                <button
-                  type="button"
-                  onClick={() => removeGoal(goal.id)}
-                  className="grid size-10 place-items-center rounded-2xl text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-label={`Fjern ${goal.title}`}
-                >
-                  <Trash2 className="size-5" aria-hidden="true" />
-                </button>
+                <div className="flex items-center justify-end gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveGoal(goal.id, -1)}
+                    disabled={index === 0}
+                    className="grid size-9 place-items-center rounded-2xl text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30"
+                    aria-label={`Flyt ${goal.title} op`}
+                  >
+                    <ArrowUp className="size-4" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveGoal(goal.id, 1)}
+                    disabled={index === goals.length - 1}
+                    className="grid size-9 place-items-center rounded-2xl text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-30"
+                    aria-label={`Flyt ${goal.title} ned`}
+                  >
+                    <ArrowDown className="size-4" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeGoal(goal.id)}
+                    className="grid size-9 place-items-center rounded-2xl text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`Fjern ${goal.title}`}
+                  >
+                    <Trash2 className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
