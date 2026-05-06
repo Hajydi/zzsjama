@@ -168,8 +168,8 @@ function KidsDashboard() {
             (Object.keys(starterRoutines) as RoutineKey[]).map((key) => [
               key,
               (parsed.routines[key] ?? starterRoutines[key]).map((goal) => ({
-                duration: 5,
                 ...goal,
+                duration: goal.duration ?? 5,
               })),
             ]),
           ) as Record<RoutineKey, Goal[]>)
