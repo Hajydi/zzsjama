@@ -49,7 +49,7 @@ export const Route = createFileRoute("/")({
 });
 
 type RoutineKey = "morning" | "afterSchool" | "evening";
-type Goal = { id: string; title: string; icon: keyof typeof goalIcons };
+type Goal = { id: string; title: string; icon: keyof typeof goalIcons; duration: number };
 type Child = { id: string; name: string };
 type SavedDashboard = {
   minutes: number;
@@ -90,42 +90,42 @@ const routineLabels: Record<RoutineKey, { eyebrow: string; title: string; button
 
 const starterRoutines: Record<RoutineKey, Goal[]> = {
   morning: [
-    { id: "morning-wake-up", title: "Stå op", icon: "sun" },
-    { id: "morning-toilet", title: "Gå på toilettet", icon: "door" },
-    { id: "morning-clothes", title: "Tag tøj på", icon: "shirt" },
-    { id: "morning-hair", title: "Red hår", icon: "sparkles" },
-    { id: "morning-brush-teeth", title: "Børst tænder", icon: "sparkles" },
-    { id: "morning-wash-face", title: "Vask ansigt", icon: "droplets" },
-    { id: "morning-sunscreen", title: "Tag solcreme på", icon: "sun" },
-    { id: "morning-breakfast", title: "Spis morgenmad", icon: "utensils" },
-    { id: "morning-plate", title: "Ryd din tallerken op", icon: "plate" },
-    { id: "morning-school-bag", title: "Pak skoletaske", icon: "backpack" },
-    { id: "morning-lunch", title: "Madpakke og drikkedunk i tasken", icon: "apple" },
-    { id: "morning-outerwear", title: "Tag overtøj og sko på", icon: "shirt" },
-    { id: "morning-car", title: "Gå ud til bilen", icon: "car" },
+    { id: "morning-wake-up", title: "Stå op", icon: "sun", duration: 3 },
+    { id: "morning-toilet", title: "Gå på toilettet", icon: "door", duration: 4 },
+    { id: "morning-clothes", title: "Tag tøj på", icon: "shirt", duration: 5 },
+    { id: "morning-hair", title: "Red hår", icon: "sparkles", duration: 2 },
+    { id: "morning-brush-teeth", title: "Børst tænder", icon: "sparkles", duration: 2 },
+    { id: "morning-wash-face", title: "Vask ansigt", icon: "droplets", duration: 2 },
+    { id: "morning-sunscreen", title: "Tag solcreme på", icon: "sun", duration: 2 },
+    { id: "morning-breakfast", title: "Spis morgenmad", icon: "utensils", duration: 10 },
+    { id: "morning-plate", title: "Ryd din tallerken op", icon: "plate", duration: 2 },
+    { id: "morning-school-bag", title: "Pak skoletaske", icon: "backpack", duration: 4 },
+    { id: "morning-lunch", title: "Madpakke og drikkedunk i tasken", icon: "apple", duration: 2 },
+    { id: "morning-outerwear", title: "Tag overtøj og sko på", icon: "shirt", duration: 3 },
+    { id: "morning-car", title: "Gå ud til bilen", icon: "car", duration: 2 },
   ],
   afterSchool: [
-    { id: "after-jacket-bag", title: "Hæng jakke og taske på plads", icon: "home" },
-    { id: "after-wash-hands", title: "Vask hænder", icon: "soap" },
-    { id: "after-snack", title: "Spis en snack", icon: "apple" },
-    { id: "after-empty-bag", title: "Tøm skoletasken", icon: "backpack" },
-    { id: "after-homework", title: "Lav lektier", icon: "book" },
-    { id: "after-free-play", title: "Fri leg / afslapning", icon: "palette" },
-    { id: "after-help", title: "Hjælp med en lille ting", icon: "helping" },
-    { id: "after-dinner", title: "Spis aftensmad", icon: "utensils" },
-    { id: "after-plate", title: "Ryd din tallerken op", icon: "plate" },
-    { id: "after-calm", title: "Rolig aktivitet", icon: "book" },
+    { id: "after-jacket-bag", title: "Hæng jakke og taske på plads", icon: "home", duration: 2 },
+    { id: "after-wash-hands", title: "Vask hænder", icon: "soap", duration: 1 },
+    { id: "after-snack", title: "Spis en snack", icon: "apple", duration: 10 },
+    { id: "after-empty-bag", title: "Tøm skoletasken", icon: "backpack", duration: 3 },
+    { id: "after-homework", title: "Lav lektier", icon: "book", duration: 30 },
+    { id: "after-free-play", title: "Fri leg / afslapning", icon: "palette", duration: 30 },
+    { id: "after-help", title: "Hjælp med en lille ting", icon: "helping", duration: 5 },
+    { id: "after-dinner", title: "Spis aftensmad", icon: "utensils", duration: 20 },
+    { id: "after-plate", title: "Ryd din tallerken op", icon: "plate", duration: 2 },
+    { id: "after-calm", title: "Rolig aktivitet", icon: "book", duration: 20 },
   ],
   evening: [
-    { id: "evening-toilet", title: "Gå på toilettet", icon: "door" },
-    { id: "evening-bath", title: "Bad / vask dig", icon: "bath" },
-    { id: "evening-pajamas", title: "Tag nattøj på", icon: "moon" },
-    { id: "evening-brush-teeth", title: "Børst tænder", icon: "sparkles" },
-    { id: "evening-pack-bag", title: "Pak skoletaske", icon: "backpack" },
-    { id: "evening-clothes-ready", title: "Læg tøj frem til i morgen", icon: "shirt" },
-    { id: "evening-room", title: "Kort oprydning på værelset", icon: "home" },
-    { id: "evening-calm", title: "Rolig aktivitet", icon: "book" },
-    { id: "evening-bed", title: "I seng", icon: "bed" },
+    { id: "evening-toilet", title: "Gå på toilettet", icon: "door", duration: 4 },
+    { id: "evening-bath", title: "Bad / vask dig", icon: "bath", duration: 10 },
+    { id: "evening-pajamas", title: "Tag nattøj på", icon: "moon", duration: 3 },
+    { id: "evening-brush-teeth", title: "Børst tænder", icon: "sparkles", duration: 2 },
+    { id: "evening-pack-bag", title: "Pak skoletaske", icon: "backpack", duration: 4 },
+    { id: "evening-clothes-ready", title: "Læg tøj frem til i morgen", icon: "shirt", duration: 3 },
+    { id: "evening-room", title: "Kort oprydning på værelset", icon: "home", duration: 5 },
+    { id: "evening-calm", title: "Rolig aktivitet", icon: "book", duration: 15 },
+    { id: "evening-bed", title: "I seng", icon: "bed", duration: 1 },
   ],
 };
 const starterChildren: Child[] = [
@@ -147,6 +147,7 @@ function KidsDashboard() {
   const [checkedByRoutine, setCheckedByRoutine] = useState<Record<RoutineKey, Record<string, string[]>>>(
     { morning: {}, afterSchool: {}, evening: {} },
   );
+  const [goalTimers, setGoalTimers] = useState<Record<string, { remaining: number; running: boolean }>>({});
   const [goalInput, setGoalInput] = useState("");
   const [childInput, setChildInput] = useState("");
   const [childCount, setChildCount] = useState(2);
@@ -162,7 +163,18 @@ function KidsDashboard() {
       setMinutes(parsed.minutes);
       setSecondsLeft(parsed.minutes * 60);
       setActiveRoutine(parsed.activeRoutine ?? "morning");
-      setRoutines(parsed.routines ?? starterRoutines);
+      const mergedRoutines = parsed.routines
+        ? (Object.fromEntries(
+            (Object.keys(starterRoutines) as RoutineKey[]).map((key) => [
+              key,
+              (parsed.routines[key] ?? starterRoutines[key]).map((goal) => ({
+                ...goal,
+                duration: goal.duration ?? 5,
+              })),
+            ]),
+          ) as Record<RoutineKey, Goal[]>)
+        : starterRoutines;
+      setRoutines(mergedRoutines);
       setChildren(parsed.children.length ? parsed.children : starterChildren);
       setCheckedByRoutine(parsed.checkedByRoutine ?? { morning: {}, afterSchool: {}, evening: {} });
       setChildCount(Math.max(1, parsed.children.length));
@@ -190,6 +202,58 @@ function KidsDashboard() {
 
     return () => window.clearInterval(timer);
   }, [isRunning]);
+
+  useEffect(() => {
+    const anyRunning = Object.values(goalTimers).some((t) => t.running);
+    if (!anyRunning) return;
+    const interval = window.setInterval(() => {
+      setGoalTimers((current) => {
+        const next: typeof current = { ...current };
+        let changed = false;
+        for (const [id, t] of Object.entries(current)) {
+          if (!t.running) continue;
+          const remaining = Math.max(0, t.remaining - 1);
+          next[id] = { remaining, running: remaining > 0 };
+          changed = true;
+        }
+        return changed ? next : current;
+      });
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [goalTimers]);
+
+  function getGoalTimerState(goal: Goal) {
+    return goalTimers[goal.id] ?? { remaining: goal.duration * 60, running: false };
+  }
+
+  function toggleGoalTimer(goal: Goal) {
+    setGoalTimers((current) => {
+      const existing = current[goal.id] ?? { remaining: goal.duration * 60, running: false };
+      const remaining = existing.remaining <= 0 ? goal.duration * 60 : existing.remaining;
+      return { ...current, [goal.id]: { remaining, running: !existing.running } };
+    });
+  }
+
+  function resetGoalTimer(goal: Goal) {
+    setGoalTimers((current) => ({ ...current, [goal.id]: { remaining: goal.duration * 60, running: false } }));
+  }
+
+  function setGoalDuration(goalId: string, nextDuration: number) {
+    const safe = Math.max(1, Math.min(120, Math.round(nextDuration) || 1));
+    setRoutines((current) => ({
+      ...current,
+      [activeRoutine]: current[activeRoutine].map((goal) =>
+        goal.id === goalId ? { ...goal, duration: safe } : goal,
+      ),
+    }));
+    setGoalTimers((current) => ({ ...current, [goalId]: { remaining: safe * 60, running: false } }));
+  }
+
+  function formatGoalTime(seconds: number) {
+    const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const secs = (seconds % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
+  }
 
   const totalSeconds = minutes * 60;
   const progress = totalSeconds === 0 ? 0 : 1 - secondsLeft / totalSeconds;
@@ -222,7 +286,10 @@ function KidsDashboard() {
     if (!title) return;
     setRoutines((current) => ({
       ...current,
-      [activeRoutine]: [...current[activeRoutine], { id: createId(activeRoutine), title, icon: "sparkles" }],
+      [activeRoutine]: [
+        ...current[activeRoutine],
+        { id: createId(activeRoutine), title, icon: "sparkles", duration: 5 },
+      ],
     }));
     setGoalInput("");
   }
@@ -536,9 +603,10 @@ function KidsDashboard() {
           <div className="overflow-x-auto rounded-3xl border bg-card shadow-soft">
             <div
               className="grid min-w-[34rem] items-center border-b bg-muted/50 px-4 py-3"
-              style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 7rem` }}
+              style={{ gridTemplateColumns: `minmax(11rem, 1fr) 8.5rem repeat(${children.length}, minmax(6.5rem, 0.55fr)) 7rem` }}
             >
               <span className="text-sm font-extrabold uppercase tracking-wide text-muted-foreground">Gøremål</span>
+              <span className="text-center text-sm font-extrabold uppercase tracking-wide text-muted-foreground">Tid</span>
               {children.map((child) => (
                 <span key={child.id} className="text-center text-sm font-black text-foreground">
                   {child.name}
@@ -550,7 +618,7 @@ function KidsDashboard() {
               <div
                 key={goal.id}
                 className="grid min-w-[34rem] items-center gap-2 border-b px-4 py-3 last:border-b-0"
-                style={{ gridTemplateColumns: `minmax(13rem, 1fr) repeat(${children.length}, minmax(7rem, 0.55fr)) 7rem` }}
+                style={{ gridTemplateColumns: `minmax(11rem, 1fr) 8.5rem repeat(${children.length}, minmax(6.5rem, 0.55fr)) 7rem` }}
               >
                 <span className="flex min-w-0 items-center gap-3 text-base font-black text-card-foreground sm:text-lg">
                   <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
@@ -561,6 +629,46 @@ function KidsDashboard() {
                   </span>
                   <span className="min-w-0 leading-tight">{index + 1}. {goal.title}</span>
                 </span>
+                {(() => {
+                  const state = getGoalTimerState(goal);
+                  return (
+                    <div className="flex flex-col items-center gap-1.5">
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          min={1}
+                          max={120}
+                          value={goal.duration}
+                          onChange={(event) => setGoalDuration(goal.id, Number(event.target.value))}
+                          className="h-8 w-12 rounded-xl border bg-background px-1 text-center text-sm font-black text-foreground outline-none focus:ring-2 focus:ring-ring"
+                          aria-label={`Minutter til ${goal.title}`}
+                        />
+                        <span className="text-xs font-extrabold text-muted-foreground">min</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => toggleGoalTimer(goal)}
+                          className="grid h-8 w-12 place-items-center rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label={state.running ? `Pause timer for ${goal.title}` : `Start timer for ${goal.title}`}
+                        >
+                          {state.running ? <Pause className="size-4" /> : <Play className="size-4" />}
+                        </button>
+                        <span className="min-w-[3.2rem] text-center text-sm font-black tabular-nums text-foreground">
+                          {formatGoalTime(state.remaining)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => resetGoalTimer(goal)}
+                          className="grid size-8 place-items-center rounded-xl text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          aria-label={`Nulstil timer for ${goal.title}`}
+                        >
+                          <RotateCcw className="size-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
                 {children.map((child) => {
                   const isDone = checkedByGoal[goal.id]?.includes(child.id) ?? false;
                   return (
