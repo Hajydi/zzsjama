@@ -655,9 +655,11 @@ function KidsDashboard() {
                         >
                           {state.running ? <Pause className="size-4" /> : <Play className="size-4" />}
                         </button>
-                        <span className="min-w-[3.2rem] text-center text-sm font-black tabular-nums text-foreground">
-                          {formatGoalTime(state.remaining)}
-                        </span>
+                        <Hourglass
+                          progress={goal.duration > 0 ? state.remaining / (goal.duration * 60) : 0}
+                          running={state.running}
+                          label={formatGoalTime(state.remaining)}
+                        />
                         <button
                           type="button"
                           onClick={() => resetGoalTimer(goal)}
