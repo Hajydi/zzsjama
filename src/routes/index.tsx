@@ -36,6 +36,63 @@ import { type CSSProperties, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
+function Hourglass({ progress, running, label }: { progress: number; running: boolean; label: string }) {
+  const p = Math.max(0, Math.min(1, progress));
+  // top bulb empties as time runs out (top fill = remaining), bottom bulb fills (1 - remaining)
+  const topFillH = 14 * p; // max 14 units
+  const bottomFillH = 14 * (1 - p);
+  return (
+    <div className="flex min-w-[3.2rem] flex-col items-center gap-0.5" aria-label={`Tid tilbage ${label}`}>
+      <svg
+        viewBox="0 0 32 44"
+        className={`h-9 w-6 text-primary ${running ? "animate-pulse" : ""}`}
+        aria-hidden="true"
+      >
+        {/* frame caps */}
+        <rect x="4" y="2" width="24" height="2.5" rx="1" fill="currentColor" />
+        <rect x="4" y="39.5" width="24" height="2.5" rx="1" fill="currentColor" />
+        {/* glass outline */}
+        <path
+          d="M6 4.5 H26 L18 21 Q18 22 18 23 L26 39.5 H6 L14 23 Q14 22 14 21 Z"
+          fill="oklch(0.97 0.02 220 / 60%)"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinejoin="round"
+        />
+        {/* top sand */}
+        <clipPath id={`top-${label}`}>
+          <path d="M6.5 5 H25.5 L17.8 20.8 Q17.8 21.5 17.8 22 L14.2 22 Q14.2 21.5 14.2 20.8 Z" />
+        </clipPath>
+        <rect
+          x="4"
+          y={5 + (14 - topFillH)}
+          width="24"
+          height={topFillH}
+          fill="var(--sun-pop)"
+          clipPath={`url(#top-${label})`}
+        />
+        {/* bottom sand */}
+        <clipPath id={`bot-${label}`}>
+          <path d="M14.2 22 Q14.2 22.5 14.2 23 L6.5 39 H25.5 L17.8 23 Q17.8 22.5 17.8 22 Z" />
+        </clipPath>
+        <rect
+          x="4"
+          y={39 - bottomFillH}
+          width="24"
+          height={bottomFillH}
+          fill="var(--sun-pop)"
+          clipPath={`url(#bot-${label})`}
+        />
+        {/* falling sand */}
+        {running && p > 0 && p < 1 && (
+          <line x1="16" y1="22" x2="16" y2="30" stroke="var(--sun-pop)" strokeWidth="1" />
+        )}
+      </svg>
+      <span className="text-[0.7rem] font-black tabular-nums text-foreground leading-none">{label}</span>
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -655,9 +712,11 @@ function KidsDashboard() {
                         >
                           {state.running ? <Pause className="size-4" /> : <Play className="size-4" />}
                         </button>
-                        <span className="min-w-[3.2rem] text-center text-sm font-black tabular-nums text-foreground">
-                          {formatGoalTime(state.remaining)}
-                        </span>
+                        <Hourglass
+                          progress={goal.duration > 0 ? state.remaining / (goal.duration * 60) : 0}
+                          running={state.running}
+                          label={formatGoalTime(state.remaining)}
+                        />
                         <button
                           type="button"
                           onClick={() => resetGoalTimer(goal)}
