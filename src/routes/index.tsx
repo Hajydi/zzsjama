@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import jamaLogo from "@/assets/jama-consulting-logo.png";
 import {
   Apple,
@@ -35,6 +35,9 @@ import type { LucideIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 function Hourglass({ progress, running, label }: { progress: number; running: boolean; label: string }) {
   const p = Math.max(0, Math.min(1, progress));
@@ -93,6 +96,22 @@ function Hourglass({ progress, running, label }: { progress: number; running: bo
   );
 }
 
+function GatedDashboard() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!loading && !user) navigate({ to: "/login" });
+  }, [loading, user, navigate]);
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground">Indlæser...</div>
+      </div>
+    );
+  }
+  return <KidsDashboard />;
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -103,7 +122,7 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: KidsDashboard,
+  component: GatedDashboard,
 });
 
 type RoutineKey = "morning" | "afterSchool" | "evening";
