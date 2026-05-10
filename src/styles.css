@@ -187,9 +187,19 @@
     50% { transform: translateY(-10px) rotate(2deg); }
   }
 
+  @keyframes hurra-pop {
+    0%   { transform: translate(-50%, -50%) scale(0.4) rotate(-15deg); opacity: 0; }
+    25%  { transform: translate(-50%, -70%) scale(1.4) rotate(8deg); opacity: 1; }
+    60%  { transform: translate(-50%, -110%) scale(1.2) rotate(-6deg); opacity: 1; }
+    100% { transform: translate(-50%, -160%) scale(0.9) rotate(0deg); opacity: 0; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .floaty {
       animation: none;
+    }
+    [style*="hurra-pop"] {
+      animation: none !important;
     }
   }
 }
