@@ -14,16 +14,256 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          child_id: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          icon: string | null
+          id: string
+          parent_user_id: string
+          points_reward: number
+          scheduled_for: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          child_id: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          icon?: string | null
+          id?: string
+          parent_user_id: string
+          points_reward?: number
+          scheduled_for?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          child_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          icon?: string | null
+          id?: string
+          parent_user_id?: string
+          points_reward?: number
+          scheduled_for?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      children: {
+        Row: {
+          avatar_url: string | null
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          parent_user_id: string
+          total_points: number
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          parent_user_id: string
+          total_points?: number
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          parent_user_id?: string
+          total_points?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reward_redemptions: {
+        Row: {
+          child_id: string
+          id: string
+          parent_user_id: string
+          points_spent: number
+          redeemed_at: string
+          reward_id: string
+        }
+        Insert: {
+          child_id: string
+          id?: string
+          parent_user_id: string
+          points_spent: number
+          redeemed_at?: string
+          reward_id: string
+        }
+        Update: {
+          child_id?: string
+          id?: string
+          parent_user_id?: string
+          points_spent?: number
+          redeemed_at?: string
+          reward_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          active: boolean
+          cost_points: number
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          image_url: string | null
+          parent_user_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          cost_points: number
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          parent_user_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          cost_points?: number
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          image_url?: string | null
+          parent_user_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          id: string
+          paddle_customer_id: string | null
+          paddle_subscription_id: string | null
+          plan: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          plan?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          plan?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_active_access: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      subscription_status:
+        | "trialing"
+        | "active"
+        | "past_due"
+        | "canceled"
+        | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +390,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      subscription_status: [
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+        "expired",
+      ],
+    },
   },
 } as const
