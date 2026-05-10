@@ -206,11 +206,6 @@ const starterRoutines: Record<RoutineKey, Goal[]> = {
     { id: "evening-bed", title: "I seng", icon: "bed", duration: 1 },
   ],
 };
-const starterChildren: Child[] = [
-  { id: "child-1", name: "Barn 1" },
-  { id: "child-2", name: "Barn 2" },
-];
-
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
