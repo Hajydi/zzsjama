@@ -37,7 +37,6 @@ import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 
 function Hourglass({ progress, running, label }: { progress: number; running: boolean; label: string }) {
   const p = Math.max(0, Math.min(1, progress));
