@@ -16,6 +16,7 @@ import {
   HandHelping,
   HandPlatter,
   Home,
+  LogOut,
   Moon,
   Minus,
   Palette,
@@ -36,6 +37,7 @@ import { type CSSProperties, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 function Hourglass({ progress, running, label }: { progress: number; running: boolean; label: string }) {
   const p = Math.max(0, Math.min(1, progress));
@@ -107,7 +109,7 @@ function GatedDashboard() {
       </div>
     );
   }
-  return <KidsDashboard />;
+  return <KidsDashboard userId={user.id} />;
 }
 
 export const Route = createFileRoute("/")({
@@ -134,7 +136,8 @@ type SavedDashboard = {
   checkedByRoutine: Record<RoutineKey, Record<string, string[]>>;
 };
 
-const storageKey = "kids-dashboard-routines-v1";
+const storageKeyBase = "kids-dashboard-routines-v1";
+const hurraEmojis = ["🎉", "🥳", "🎊", "🙌", "⭐", "🌟", "✨", "💫", "🎈", "🏆", "👏", "💪"];
 const goalIcons = {
   apple: Apple,
   backpack: Backpack,
@@ -212,13 +215,16 @@ function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function KidsDashboard() {
+function KidsDashboard({ userId }: { userId: string }) {
+  const storageKey = `${storageKeyBase}:${userId}`;
+  const navigate = useNavigate();
+  const [celebrations, setCelebrations] = useState<{ id: string; emoji: string; x: number; y: number }[]>([]);
   const [minutes, setMinutes] = useState(15);
   const [secondsLeft, setSecondsLeft] = useState(minutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [activeRoutine, setActiveRoutine] = useState<RoutineKey>("morning");
   const [routines, setRoutines] = useState<Record<RoutineKey, Goal[]>>(starterRoutines);
-  const [children, setChildren] = useState<Child[]>(starterChildren);
+  const [children, setChildren] = useState<Child[]>([]);
   const [checkedByRoutine, setCheckedByRoutine] = useState<Record<RoutineKey, Record<string, string[]>>>(
     { morning: {}, afterSchool: {}, evening: {} },
   );
@@ -230,6 +236,50 @@ function KidsDashboard() {
   const goals = routines[activeRoutine];
   const checkedByGoal = checkedByRoutine[activeRoutine];
   const activeLabel = routineLabels[activeRoutine];
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    navigate({ to: "/login" });
+  }
+
+  function celebrate(target?: HTMLElement | null) {
+    const emoji = hurraEmojis[Math.floor(Math.random() * hurraEmojis.length)];
+    let x = window.innerWidth / 2;
+    let y = window.innerHeight / 2;
+    if (target) {
+      const rect = target.getBoundingClientRect();
+      x = rect.left + rect.width / 2;
+      y = rect.top + rect.height / 2;
+    }
+    const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    setCelebrations((c) => [...c, { id, emoji, x, y }]);
+    window.setTimeout(() => {
+      setCelebrations((c) => c.filter((item) => item.id !== id));
+    }, 1200);
+  }
+
+  // Load children from cloud
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("children")
+        .select("id, name")
+        .order("created_at", { ascending: true });
+      if (cancelled) return;
+      if (error) {
+        console.error("Kunne ikke hente børn", error);
+        return;
+      }
+      if (data && data.length > 0) {
+        setChildren(data.map((c) => ({ id: c.id, name: c.name })));
+        setChildCount(data.length);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(storageKey);
@@ -250,18 +300,16 @@ function KidsDashboard() {
           ) as Record<RoutineKey, Goal[]>)
         : starterRoutines;
       setRoutines(mergedRoutines);
-      setChildren(parsed.children.length ? parsed.children : starterChildren);
       setCheckedByRoutine(parsed.checkedByRoutine ?? { morning: {}, afterSchool: {}, evening: {} });
-      setChildCount(Math.max(1, parsed.children.length));
     }
     setHasLoaded(true);
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
     if (!hasLoaded) return;
     const saved: SavedDashboard = { minutes, activeRoutine, routines, children, checkedByRoutine };
     window.localStorage.setItem(storageKey, JSON.stringify(saved));
-  }, [activeRoutine, checkedByRoutine, children, hasLoaded, minutes, routines]);
+  }, [activeRoutine, checkedByRoutine, children, hasLoaded, minutes, routines, storageKey]);
 
   useEffect(() => {
     if (!isRunning) return;
@@ -438,30 +486,59 @@ function KidsDashboard() {
     });
   }
 
-  function addChild(event: React.FormEvent<HTMLFormElement>) {
+  async function addChild(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = childInput.trim().slice(0, 24);
     if (!name) return;
-    setChildren((current) => [...current, { id: createId("child"), name }]);
+    const { data, error } = await supabase
+      .from("children")
+      .insert({ name, parent_user_id: userId })
+      .select("id, name")
+      .single();
+    if (error || !data) {
+      console.error("Kunne ikke oprette barn", error);
+      return;
+    }
+    setChildren((current) => [...current, { id: data.id, name: data.name }]);
     setChildInput("");
     setChildCount((current) => current + 1);
   }
 
-  function createChildrenFromCount() {
-    const nextChildren = Array.from({ length: childCount }, (_, index) => ({
-      id: `child-${index + 1}`,
+  async function createChildrenFromCount() {
+    // Wipe existing cloud children for this user, then insert fresh ones.
+    const { error: delError } = await supabase
+      .from("children")
+      .delete()
+      .eq("parent_user_id", userId);
+    if (delError) {
+      console.error("Kunne ikke nulstille børn", delError);
+      return;
+    }
+    const rows = Array.from({ length: childCount }, (_, index) => ({
       name: `Barn ${index + 1}`,
+      parent_user_id: userId,
     }));
-    setChildren(nextChildren);
+    const { data, error } = await supabase.from("children").insert(rows).select("id, name");
+    if (error || !data) {
+      console.error("Kunne ikke oprette børn", error);
+      return;
+    }
+    setChildren(data.map((c) => ({ id: c.id, name: c.name })));
     clearAllChecks();
   }
 
-  function removeChild(childId: string) {
+  async function removeChild(childId: string) {
+    const { error } = await supabase.from("children").delete().eq("id", childId);
+    if (error) {
+      console.error("Kunne ikke slette barn", error);
+      return;
+    }
     setChildren((current) => current.filter((child) => child.id !== childId));
     removeChecksForChild(childId);
   }
 
-  function toggleCheck(goalId: string, childId: string) {
+  function toggleCheck(goalId: string, childId: string, event?: React.MouseEvent<HTMLButtonElement>) {
+    const wasChecked = checkedByGoal[goalId]?.includes(childId) ?? false;
     updateCheckedRoutine((current) => {
       const childIds = current[goalId] ?? [];
       return {
@@ -471,10 +548,33 @@ function KidsDashboard() {
           : [...childIds, childId],
       };
     });
+    if (!wasChecked) celebrate(event?.currentTarget ?? null);
   }
 
   return (
     <main className="dashboard-sky min-h-screen overflow-hidden px-4 py-5 text-foreground sm:px-6 lg:px-8">
+      {/* Celebration emoji overlay */}
+      <div className="pointer-events-none fixed inset-0 z-50">
+        {celebrations.map((c) => (
+          <span
+            key={c.id}
+            className="absolute -translate-x-1/2 -translate-y-1/2 select-none text-5xl sm:text-6xl"
+            style={{
+              left: c.x,
+              top: c.y,
+              animation: "hurra-pop 1.1s ease-out forwards",
+            }}
+          >
+            {c.emoji}
+          </span>
+        ))}
+      </div>
+      <div className="mx-auto mb-3 flex max-w-7xl items-center justify-end">
+        <Button variant="outline" size="sm" onClick={handleLogout}>
+          <LogOut aria-hidden="true" />
+          Log ud
+        </Button>
+      </div>
       <section className="mx-auto grid min-h-[calc(100vh-2.5rem)] max-w-7xl content-center gap-6 xl:grid-cols-[0.95fr_1.05fr] lg:gap-8">
         <div className="rounded-[2rem] border bg-panel p-5 shadow-soft backdrop-blur-md sm:p-8">
           <div className="mb-6 flex items-center justify-between gap-4">
@@ -752,7 +852,7 @@ function KidsDashboard() {
                     <button
                       key={child.id}
                       type="button"
-                      onClick={() => toggleCheck(goal.id, child.id)}
+                      onClick={(e) => toggleCheck(goal.id, child.id, e)}
                       className="mx-auto grid size-12 place-items-center rounded-2xl border bg-background text-primary transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={`${child.name}: ${goal.title}`}
                       aria-pressed={isDone}
