@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import jamaLogo from "@/assets/jama-consulting-logo.png";
+import zzsLogo from "@/assets/zzs-logo.png";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
   head: () => ({
     meta: [
-      { title: "Log ind – Jama Consulting" },
-      { name: "description", content: "Log ind eller opret konto for at bruge Jama Consulting timer-app." },
+      { title: "Log ind – ZZS" },
+      { name: "description", content: "Log ind eller opret konto for at bruge ZZS aktivitets-app for børn." },
     ],
   }),
 });
@@ -80,14 +80,26 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center">
-          <img src={jamaLogo} alt="Jama Consulting" className="mb-4 h-16 w-auto" />
+          <img src={zzsLogo} alt="ZZS" className="mb-4 h-24 w-auto" />
           <h1 className="text-2xl font-bold text-foreground">
             {mode === "signin" ? "Log ind" : "Opret konto"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signin" ? "Velkommen tilbage" : "3 dages gratis prøveperiode"}
+            {mode === "signin" ? "Velkommen tilbage" : "Start med 3 dages gratis prøveperiode"}
           </p>
         </div>
+
+        {mode === "signup" && (
+          <div className="mb-4 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
+            <p className="font-bold text-foreground">Få fuld adgang for kun 39 kr/md</p>
+            <ul className="mt-2 list-disc space-y-0.5 pl-5 text-muted-foreground">
+              <li>3 dages gratis prøveperiode</li>
+              <li>Ubegrænsede børn, mål og belønninger</li>
+              <li>Data følger din konto på alle enheder</li>
+              <li>Opsig når som helst</li>
+            </ul>
+          </div>
+        )}
 
         <div className="rounded-2xl border bg-card p-6 shadow-sm">
           <Button
