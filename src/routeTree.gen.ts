@@ -9,9 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SubscribeRouteImport } from './routes/subscribe'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SubscribeSuccessRouteImport } from './routes/subscribe.success'
 
+const SubscribeRoute = SubscribeRouteImport.update({
+  id: '/subscribe',
+  path: '/subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -22,35 +29,54 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubscribeSuccessRoute = SubscribeSuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
+  getParentRoute: () => SubscribeRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/subscribe': typeof SubscribeRouteWithChildren
+  '/subscribe/success': typeof SubscribeSuccessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/subscribe': typeof SubscribeRouteWithChildren
+  '/subscribe/success': typeof SubscribeSuccessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/subscribe': typeof SubscribeRouteWithChildren
+  '/subscribe/success': typeof SubscribeSuccessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths: '/' | '/login' | '/subscribe' | '/subscribe/success'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login'
-  id: '__root__' | '/' | '/login'
+  to: '/' | '/login' | '/subscribe' | '/subscribe/success'
+  id: '__root__' | '/' | '/login' | '/subscribe' | '/subscribe/success'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  SubscribeRoute: typeof SubscribeRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/subscribe': {
+      id: '/subscribe'
+      path: '/subscribe'
+      fullPath: '/subscribe'
+      preLoaderRoute: typeof SubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -65,12 +91,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/subscribe/success': {
+      id: '/subscribe/success'
+      path: '/success'
+      fullPath: '/subscribe/success'
+      preLoaderRoute: typeof SubscribeSuccessRouteImport
+      parentRoute: typeof SubscribeRoute
+    }
   }
 }
+
+interface SubscribeRouteChildren {
+  SubscribeSuccessRoute: typeof SubscribeSuccessRoute
+}
+
+const SubscribeRouteChildren: SubscribeRouteChildren = {
+  SubscribeSuccessRoute: SubscribeSuccessRoute,
+}
+
+const SubscribeRouteWithChildren = SubscribeRoute._addFileChildren(
+  SubscribeRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  SubscribeRoute: SubscribeRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
