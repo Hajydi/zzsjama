@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import jamaLogo from "@/assets/jama-consulting-logo.png";
 import {
   Apple,
   ArrowDown,
@@ -886,16 +885,6 @@ function KidsDashboard({ userId }: { userId: string }) {
                 </div>
               </div>
             ))}
-          </div>
-          <div className="mt-5 flex flex-col items-center gap-2">
-            <img
-              src={jamaLogo}
-              alt="Jama Consulting logo"
-              className="h-14 w-auto opacity-80"
-            />
-            <p className="text-center text-sm font-extrabold text-muted-foreground">
-              Udviklet af Jama Consulting
-            </p>
           </div>
         </aside>
       </section>
