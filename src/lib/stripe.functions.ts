@@ -81,10 +81,13 @@ export const verifyCheckoutSession = createServerFn({ method: "POST" })
     if (session.client_reference_id !== context.userId) {
       throw new Error("Session does not belong to this user");
     }
-    const subscription = session.subscription as Stripe.Subscription | null;
+    const subscription = session.subscription as any;
     if (!subscription) {
       return { ok: false, status: "no_subscription" as const };
     }
+    const periodEnd: number | undefined =
+      subscription.current_period_end ??
+      subscription.items?.data?.[0]?.current_period_end;
     await supabaseAdmin
       .from("subscriptions")
       .update({
@@ -92,7 +95,7 @@ export const verifyCheckoutSession = createServerFn({ method: "POST" })
         paddle_subscription_id: subscription.id,
         paddle_customer_id:
           typeof session.customer === "string" ? session.customer : session.customer?.id ?? null,
-        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
         plan: "monthly_39_dkk",
       } as any)
       .eq("user_id", context.userId);
