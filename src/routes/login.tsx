@@ -85,7 +85,7 @@ function LoginPage() {
             {mode === "signin" ? "Log ind" : "Opret konto"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signin" ? "Velkommen tilbage" : "Start med 3 dages gratis prøveperiode"}
+            {mode === "signin" ? "Velkommen tilbage" : "Opret konto og tegn abonnement"}
           </p>
         </div>
 
@@ -93,7 +93,6 @@ function LoginPage() {
           <div className="mb-4 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
             <p className="font-bold text-foreground">Få fuld adgang for kun 39 kr/md</p>
             <ul className="mt-2 list-disc space-y-0.5 pl-5 text-muted-foreground">
-              <li>3 dages gratis prøveperiode</li>
               <li>Ubegrænsede børn, mål og belønninger</li>
               <li>Data følger din konto på alle enheder</li>
               <li>Opsig når som helst</li>

@@ -42,7 +42,6 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       customer_email: sub?.paddle_customer_id ? undefined : (profile?.email ?? undefined),
       client_reference_id: userId,
       subscription_data: {
-        trial_period_days: 3,
         metadata: { user_id: userId },
       },
       metadata: { user_id: userId },
@@ -107,11 +106,14 @@ export const getSubscriptionStatus = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data } = await supabaseAdmin
       .from("subscriptions")
-      .select("status, trial_ends_at, current_period_end")
+      .select("status, trial_ends_at, current_period_end, has_lifetime_access")
       .eq("user_id", context.userId)
       .maybeSingle();
     if (!data) return { active: false, status: "none", trialEndsAt: null };
     const now = Date.now();
+    if ((data as any).has_lifetime_access) {
+      return { active: true, status: "lifetime", trialEndsAt: null, currentPeriodEnd: null };
+    }
     const trialActive =
       data.status === "trialing" && data.trial_ends_at && new Date(data.trial_ends_at).getTime() > now;
     const subActive =

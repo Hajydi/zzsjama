@@ -13,6 +13,7 @@ import { Route as SubscribeRouteImport } from './routes/subscribe'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SubscribeSuccessRouteImport } from './routes/subscribe.success'
+import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 
 const SubscribeRoute = SubscribeRouteImport.update({
   id: '/subscribe',
@@ -34,18 +35,25 @@ const SubscribeSuccessRoute = SubscribeSuccessRouteImport.update({
   path: '/success',
   getParentRoute: () => SubscribeRoute,
 } as any)
+const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
+  id: '/api/public/stripe-webhook',
+  path: '/api/public/stripe-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/subscribe': typeof SubscribeRouteWithChildren
   '/subscribe/success': typeof SubscribeSuccessRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/subscribe': typeof SubscribeRouteWithChildren
   '/subscribe/success': typeof SubscribeSuccessRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,19 +61,37 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/subscribe': typeof SubscribeRouteWithChildren
   '/subscribe/success': typeof SubscribeSuccessRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/subscribe' | '/subscribe/success'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/subscribe'
+    | '/subscribe/success'
+    | '/api/public/stripe-webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/subscribe' | '/subscribe/success'
-  id: '__root__' | '/' | '/login' | '/subscribe' | '/subscribe/success'
+  to:
+    | '/'
+    | '/login'
+    | '/subscribe'
+    | '/subscribe/success'
+    | '/api/public/stripe-webhook'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/subscribe'
+    | '/subscribe/success'
+    | '/api/public/stripe-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   SubscribeRoute: typeof SubscribeRouteWithChildren
+  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -98,6 +124,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubscribeSuccessRouteImport
       parentRoute: typeof SubscribeRoute
     }
+    '/api/public/stripe-webhook': {
+      id: '/api/public/stripe-webhook'
+      path: '/api/public/stripe-webhook'
+      fullPath: '/api/public/stripe-webhook'
+      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -117,6 +150,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   SubscribeRoute: SubscribeRouteWithChildren,
+  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
