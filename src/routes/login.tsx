@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import zzsLogo from "@/assets/zzs-logo.png";
+import { Sparkles, Check } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -77,30 +78,44 @@ function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="dashboard-sky flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
-        <div className="mb-6 flex flex-col items-center">
-          <img src={zzsLogo} alt="ZZS" className="mb-4 h-24 w-auto" />
-          <h1 className="text-2xl font-bold text-foreground">
-            {mode === "signin" ? "Log ind" : "Opret konto"}
+        <div className="mb-6 flex flex-col items-center text-center">
+          <Link to="/" className="mb-4">
+            <img src={zzsLogo} alt="ZZS" className="h-20 w-auto" />
+          </Link>
+          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+            <Sparkles className="size-3.5" /> Fuld adgang fra dag 1
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+            {mode === "signin" ? "Velkommen tilbage" : "Kom i gang med ZZS"}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signin" ? "Velkommen tilbage" : "Opret konto og tegn abonnement"}
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            {mode === "signin"
+              ? "Log ind og fortsæt hvor du slap"
+              : "Opret konto, tegn abonnement og få fuld adgang med det samme"}
           </p>
         </div>
 
         {mode === "signup" && (
-          <div className="mb-4 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
-            <p className="font-bold text-foreground">Få fuld adgang for kun 39 kr/md</p>
-            <ul className="mt-2 list-disc space-y-0.5 pl-5 text-muted-foreground">
-              <li>Ubegrænsede børn, mål og belønninger</li>
-              <li>Data følger din konto på alle enheder</li>
-              <li>Opsig når som helst</li>
+          <div className="mb-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+            <p className="text-sm font-bold text-foreground">Du får alt for kun 39 kr/md</p>
+            <ul className="mt-2 space-y-1.5">
+              {[
+                "Ubegrænsede børn, mål og belønninger",
+                "Følger med på alle dine enheder",
+                "Opsig når som helst – ingen binding",
+              ].map((b) => (
+                <li key={b} className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <Check className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                  <span>{b}</span>
+                </li>
+              ))}
             </ul>
           </div>
         )}
 
-        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+        <div className="rounded-3xl border bg-card p-6 shadow-soft">
           <Button
             type="button"
             variant="outline"
@@ -172,12 +187,12 @@ function LoginPage() {
               className="font-medium text-primary hover:underline"
               onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
             >
-              {mode === "signin" ? "Opret en" : "Log ind"}
+              {mode === "signin" ? "Opret en og kom i gang" : "Log ind"}
             </button>
           </p>
         </div>
 
-        <p className="mt-4 text-center text-xs text-muted-foreground">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           <Link to="/" className="hover:underline">← Tilbage til forsiden</Link>
         </p>
       </div>
