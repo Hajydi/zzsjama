@@ -106,11 +106,14 @@ export const getSubscriptionStatus = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data } = await supabaseAdmin
       .from("subscriptions")
-      .select("status, trial_ends_at, current_period_end")
+      .select("status, trial_ends_at, current_period_end, has_lifetime_access")
       .eq("user_id", context.userId)
       .maybeSingle();
     if (!data) return { active: false, status: "none", trialEndsAt: null };
     const now = Date.now();
+    if ((data as any).has_lifetime_access) {
+      return { active: true, status: "lifetime", trialEndsAt: null, currentPeriodEnd: null };
+    }
     const trialActive =
       data.status === "trialing" && data.trial_ends_at && new Date(data.trial_ends_at).getTime() > now;
     const subActive =
