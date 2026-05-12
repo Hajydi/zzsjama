@@ -42,7 +42,6 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       customer_email: sub?.paddle_customer_id ? undefined : (profile?.email ?? undefined),
       client_reference_id: userId,
       subscription_data: {
-        trial_period_days: 3,
         metadata: { user_id: userId },
       },
       metadata: { user_id: userId },
