@@ -39,6 +39,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { getSubscriptionStatus } from "@/lib/stripe.functions";
+import { LandingPage } from "@/components/LandingPage";
 
 function Hourglass({ progress, running, label }: { progress: number; running: boolean; label: string }) {
   const p = Math.max(0, Math.min(1, progress));
@@ -103,9 +104,6 @@ function GatedDashboard() {
   const checkStatus = useServerFn(getSubscriptionStatus);
   const [accessChecked, setAccessChecked] = useState(false);
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/login" });
-  }, [loading, user, navigate]);
-  useEffect(() => {
     if (!user) return;
     checkStatus()
       .then((s) => {
@@ -114,7 +112,17 @@ function GatedDashboard() {
       })
       .catch(() => setAccessChecked(true));
   }, [user, checkStatus, navigate]);
-  if (loading || !user || !accessChecked) {
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground">Indlæser...</div>
+      </div>
+    );
+  }
+  if (!user) {
+    return <LandingPage />;
+  }
+  if (!accessChecked) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-sm text-muted-foreground">Indlæser...</div>
