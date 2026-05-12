@@ -77,7 +77,7 @@ function SubscribePage() {
 
         <div className="rounded-3xl border bg-card p-6 shadow-sm">
           <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-            <Sparkles className="size-3.5" /> 3 dages gratis prøveperiode
+            <Sparkles className="size-3.5" /> Fuld adgang fra dag 1
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
             Få fuld adgang til ZZS
@@ -110,11 +110,11 @@ function SubscribePage() {
             size="kid"
             className="mt-6 w-full"
           >
-            {loading ? "Sender dig til betaling…" : "Start prøveperiode – 39 kr/md"}
+            {loading ? "Sender dig til betaling…" : "Tegn abonnement – 39 kr/md"}
           </Button>
 
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Du betaler først efter 3 dage. Opsig når som helst i Stripe-portalen.
+            Du opsiger når som helst i Stripe-portalen.
           </p>
         </div>
 
