@@ -41,7 +41,8 @@ function SubscribePage() {
     });
   }, [navigate, checkStatus]);
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+    e?.preventDefault();
     setLoading(true);
     try {
       const res = await startCheckout({ data: { origin: window.location.origin } });
@@ -104,6 +105,7 @@ function SubscribePage() {
           </ul>
 
           <Button
+            type="button"
             onClick={handleSubscribe}
             disabled={loading}
             variant="kid"
